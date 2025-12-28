@@ -23,10 +23,11 @@ export default function ItemCard({ item, onEdit, onDelete }) {
       hoverable
       className="bg-[#1a1a2e] border-[#27272a] overflow-hidden group"
       cover={
-        item.image_url ? (
+        // PERBAIKAN: Gunakan item.image (bukan item.image_url)
+        item.image ? (
           <div className="relative overflow-hidden h-64">
             <Image
-              src={item.image_url}
+              src={item.image} 
               alt={item.name}
               className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
               preview={{
@@ -51,9 +52,10 @@ export default function ItemCard({ item, onEdit, onDelete }) {
           </p>
         </div>
 
-        {item.document_url && (
+        {/* PERBAIKAN: Gunakan item.document (bukan item.document_url) */}
+        {item.document && (
           <a
-            href={item.document_url}
+            href={item.document}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 transition-colors"
@@ -101,3 +103,4 @@ export default function ItemCard({ item, onEdit, onDelete }) {
     </Card>
   );
 }
+
