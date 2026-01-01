@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Layout, Row, Col, Spin, Empty, message, Typography } from 'antd';
+import { Layout, Row, Col, Spin, Empty, message, Typography, Alert } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { FiBox, FiPackage } from 'react-icons/fi';
 import { api } from '@/lib/api';
@@ -14,6 +14,7 @@ const { Title, Text } = Typography;
 export default function Home() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
@@ -23,10 +24,22 @@ export default function Home() {
   const fetchItems = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await api.getItems();
-      setItems(data);
+      
+      // Ensure data is array
+      if (Array.isArray(data)) {
+        setItems(data);
+      } else {
+        console.error('API did not return an array:', data);
+        setItems([]);
+        setError('Format data tidak valid dari server');
+      }
     } catch (error) {
+      console.error('Fetch error:', error);
       message.error('Gagal memuat data');
+      setError(error.message || 'Gagal terhubung ke server');
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -44,7 +57,8 @@ export default function Home() {
       }
       fetchItems();
     } catch (error) {
-      message.error('Gagal menyimpan item');
+      console.error('Submit error:', error);
+      message.error(error.response?.data?.message || 'Gagal menyimpan item');
       throw error;
     }
   };
@@ -64,6 +78,7 @@ export default function Home() {
       message.success('Item berhasil dihapus!');
       fetchItems();
     } catch (error) {
+      console.error('Delete error:', error);
       message.error('Gagal menghapus item');
     }
   };
@@ -94,6 +109,24 @@ export default function Home() {
       {/* Content */}
       <Content className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-8">
+          {/* Error Alert */}
+          {error && (
+            <Alert
+              message="Error"
+              description={
+                <div>
+                  <p>{error}</p>
+                  <p className="text-sm mt-2">
+                    API URL: <code className="bg-gray-800 px-2 py-1 rounded">{process.env.NEXT_PUBLIC_API_URL || 'Not set'}</code>
+                  </p>
+                </div>
+              }
+              type="error"
+              closable
+              onClose={() => setError(null)}
+            />
+          )}
+
           {/* Form Section */}
           <ItemForm
             editingItem={editingItem}
@@ -124,7 +157,7 @@ export default function Home() {
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
                   <span className="text-gray-400">
-                    Belum ada item. Tambahkan item pertama!
+                    {error ? 'Gagal memuat data dari server' : 'Belum ada item. Tambahkan item pertama!'}
                   </span>
                 }
                 className="py-20"
