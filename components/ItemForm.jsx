@@ -14,11 +14,9 @@ const { TextArea } = Input;
 export default function ItemForm({ editingItem, onSubmit, onCancel }) {
   const [form] = Form.useForm();
   
-  // State untuk menyimpan file object (untuk dikirim ke API)
   const [imageFile, setImageFile] = useState(null);
   const [documentFile, setDocumentFile] = useState(null);
   
-  // State untuk mengontrol tampilan list di komponen Upload (PENTING AGAR BISA RESET)
   const [fileListImage, setFileListImage] = useState([]);
   const [fileListDoc, setFileListDoc] = useState([]);
 
@@ -32,15 +30,17 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
         name: editingItem.name,
         description: editingItem.description,
       });
-      // Tampilkan gambar lama di preview
+      
       if (editingItem.image) {
         setImagePreview(editingItem.image);
       }
-      // Kosongkan list upload karena user belum upload file BARU
+      
       setFileListImage([]);
       setFileListDoc([]);
+      setImageFile(null);
+      setDocumentFile(null);
     } else {
-      // MODE TAMBAH BARU (RESET TOTAL)
+      // MODE TAMBAH BARU
       resetAll();
     }
   }, [editingItem, form]);
@@ -50,19 +50,16 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
     setImageFile(null);
     setDocumentFile(null);
     setImagePreview(null);
-    setFileListImage([]); // Visual list gambar hilang
-    setFileListDoc([]);   // Visual list dokumen hilang
+    setFileListImage([]);
+    setFileListDoc([]);
   };
 
   const handleImageChange = ({ fileList }) => {
-    // Ambil file terbaru
     const file = fileList.length > 0 ? fileList[0].originFileObj : null;
     
-    // Update state visual & logic
     setFileListImage(fileList); 
     setImageFile(file);
 
-    // Preview Logic
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -70,7 +67,6 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
       };
       reader.readAsDataURL(file);
     } else if (!file && editingItem?.image) {
-      // Jika cancel upload saat edit, kembalikan ke gambar lama
       setImagePreview(editingItem.image);
     } else {
       setImagePreview(null);
@@ -101,15 +97,19 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
 
     try {
       await onSubmit(formData);
-      // Jika sukses dan mode tambah baru, reset form
       if (!editingItem) {
         resetAll();
       }
     } catch (error) {
-      message.error('Gagal menyimpan item');
+      console.error('Submit error:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    resetAll();
+    if (onCancel) onCancel();
   };
 
   return (
@@ -151,7 +151,6 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
         <Form.Item
           label={<span className="text-gray-300 font-semibold">🖼️ Upload Gambar</span>}
         >
-          {/* PERBAIKAN: Tambahkan prop fileList={fileListImage} */}
           <Upload
             beforeUpload={() => false}
             onChange={handleImageChange}
@@ -159,6 +158,15 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
             accept="image/*"
             maxCount={1}
             listType="picture"
+            onRemove={() => {
+              setImageFile(null);
+              setFileListImage([]);
+              if (editingItem?.image) {
+                setImagePreview(editingItem.image);
+              } else {
+                setImagePreview(null);
+              }
+            }}
           >
             <Button 
               icon={<FileImageOutlined />} 
@@ -169,7 +177,6 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
             </Button>
           </Upload>
           
-          {/* Preview Image */}
           {imagePreview && (
             <div className="mt-4">
               <p className="text-gray-400 mb-2 text-sm">Preview:</p>
@@ -186,12 +193,15 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
         <Form.Item
           label={<span className="text-gray-300 font-semibold">📄 Upload Dokumen</span>}
         >
-          {/* PERBAIKAN: Tambahkan prop fileList={fileListDoc} */}
           <Upload
             beforeUpload={() => false}
             onChange={handleDocumentChange}
             fileList={fileListDoc}
             maxCount={1}
+            onRemove={() => {
+              setDocumentFile(null);
+              setFileListDoc([]);
+            }}
           >
             <Button 
               icon={<FilePdfOutlined />} 
@@ -206,6 +216,16 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
 
         <Form.Item>
           <Space className="w-full justify-end">
+            {editingItem && (
+              <Button
+                onClick={handleCancel}
+                icon={<FiX className="inline" />}
+                size="large"
+              >
+                Batal
+              </Button>
+            )}
+            
             <Button
               type="primary"
               htmlType="submit"
@@ -216,23 +236,9 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
             >
               {editingItem ? 'Update' : 'Tambah'}
             </Button>
-            
-            {editingItem && (
-              <Button
-                onClick={() => {
-                   resetAll();
-                   onCancel();
-                }}
-                icon={<FiX className="inline" />}
-                size="large"
-              >
-                Batal
-              </Button>
-            )}
           </Space>
         </Form.Item>
       </Form>
     </div>
   );
 }
-
