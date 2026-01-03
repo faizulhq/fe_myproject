@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Button, Space, Image, Tag, Popconfirm } from 'antd';
+import { Card, Button, Space, Tag, Popconfirm } from 'antd';
 import { 
   EditOutlined, 
   DeleteOutlined, 
@@ -23,17 +23,22 @@ export default function ItemCard({ item, onEdit, onDelete }) {
       hoverable
       className="bg-[#1a1a2e] border-[#27272a] overflow-hidden group"
       cover={
-        // PERBAIKAN: Gunakan item.image (bukan item.image_url)
         item.image ? (
-          <div className="relative overflow-hidden h-64">
-            <Image
+          <div className="relative overflow-hidden h-64 cursor-pointer" onClick={() => window.open(item.image, '_blank')}>
+            <img
               src={item.image} 
               alt={item.name}
               className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
-              preview={{
-                mask: <div className="text-white">🔍 Lihat</div>
+              onError={(e) => {
+                console.error('Image load error:', item.image);
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<div class="h-64 bg-gradient-to-br from-purple-900/30 to-pink-900/30 flex items-center justify-center"><svg class="w-16 h-16 text-purple-400/50" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/></svg></div>';
               }}
             />
+            {/* Overlay on hover */}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="text-white text-lg font-semibold">🔍 Klik untuk Lihat</span>
+            </div>
           </div>
         ) : (
           <div className="h-64 bg-gradient-to-br from-purple-900/30 to-pink-900/30 flex items-center justify-center">
@@ -52,12 +57,12 @@ export default function ItemCard({ item, onEdit, onDelete }) {
           </p>
         </div>
 
-        {/* PERBAIKAN: Gunakan item.document (bukan item.document_url) */}
         {item.document && (
           <a
             href={item.document}
             target="_blank"
             rel="noopener noreferrer"
+            download
             className="flex items-center gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 transition-colors"
           >
             <FiFile className="text-blue-400" />
@@ -103,4 +108,3 @@ export default function ItemCard({ item, onEdit, onDelete }) {
     </Card>
   );
 }
-
