@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, message, Space } from 'antd';
 import { 
   FileImageOutlined, 
-  FilePdfOutlined,
-  SaveOutlined 
+  FilePdfOutlined 
 } from '@ant-design/icons';
 import { FiSave, FiX } from 'react-icons/fi';
 
@@ -25,7 +24,6 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
 
   useEffect(() => {
     if (editingItem) {
-      // MODE EDIT
       form.setFieldsValue({
         name: editingItem.name,
         description: editingItem.description,
@@ -40,7 +38,6 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
       setImageFile(null);
       setDocumentFile(null);
     } else {
-      // MODE TAMBAH BARU
       resetAll();
     }
   }, [editingItem, form]);
@@ -102,6 +99,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
       }
     } catch (error) {
       console.error('Submit error:', error);
+      message.error('Gagal menyimpan data');
     } finally {
       setLoading(false);
     }
