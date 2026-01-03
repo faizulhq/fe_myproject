@@ -1,39 +1,33 @@
-export const darkTheme = {
+import { theme } from 'antd';
+
+const themeConfig = {
+  algorithm: theme.darkAlgorithm,
   token: {
-    // Colors
-    colorPrimary: '#8b5cf6',       // Purple primary
-    colorBgContainer: '#1a1a2e',   // Dark container
-    colorBgElevated: '#16213e',    // Elevated elements
-    colorBgLayout: '#0f0f23',      // Layout background
-    colorText: '#e4e4e7',          // Text color
-    colorTextSecondary: '#a1a1aa', // Secondary text
-    colorBorder: '#27272a',        // Border color
-    
-    // Border Radius
-    borderRadius: 12,
-    
-    // Font
-    fontSize: 14,
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontFamily: "'Inter', sans-serif", // Font modern
+    colorBgBase: '#000000',      // Background Hitam Pekat
+    colorBgContainer: '#111111', // Container sedikit lebih terang
+    colorBgElevated: '#1a1a1a',  // Dropdown/Modal
+    colorPrimary: '#ffffff',     // Aksen Putih
+    colorText: '#ffffff',
+    colorTextSecondary: '#888888',
+    colorBorder: '#333333',
+    borderRadius: 8,
   },
   components: {
-    Card: {
-      colorBgContainer: '#1a1a2e',
-      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+    Layout: {
+      bodyBg: '#000000',
+      headerBg: '#111111',
+      siderBg: '#111111',
     },
     Button: {
-      controlHeight: 40,
+      primaryColor: '#000000', // Teks tombol primary jadi hitam biar terbaca
       fontWeight: 600,
     },
-    Input: {
-      controlHeight: 44,
-      colorBgContainer: '#16213e',
-    },
-    Upload: {
-      colorBgContainer: '#16213e',
-    },
-    Modal: {
-      colorBgElevated: '#1a1a2e',
-    },
-  },
+    Card: {
+      colorBgContainer: '#111111',
+      boxShadowTertiary: '0 1px 2px 0 rgba(255, 255, 255, 0.05)',
+    }
+  }
 };
+
+export default themeConfig;

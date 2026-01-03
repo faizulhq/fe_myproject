@@ -1,205 +1,179 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Layout, Row, Col, Spin, Empty, message, Typography, Alert } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-import { FiBox, FiPackage } from 'react-icons/fi';
-import { api } from '@/lib/api';
-import ItemForm from '@/components/ItemForm';
-import ItemCard from '@/components/ItemCard';
+import { api } from '../lib/api';
+import { Button, Row, Col, Input, Typography, Modal, Spin, Empty, Card } from 'antd';
+import { PlusOutlined, SearchOutlined, DatabaseOutlined, FileTextOutlined } from '@ant-design/icons';
+import ItemCard from '../components/ItemCard';
+import ItemForm from '../components/ItemForm';
 
-const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
 
 export default function Home() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
 
   const fetchItems = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await api.getItems();
-      
-      // Ensure data is array
-      if (Array.isArray(data)) {
-        setItems(data);
-      } else {
-        console.error('API did not return an array:', data);
-        setItems([]);
-        setError('Format data tidak valid dari server');
-      }
+      setItems(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Fetch error:', error);
-      message.error('Gagal memuat data');
-      setError(error.message || 'Gagal terhubung ke server');
+      console.error(error);
       setItems([]);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => { fetchItems(); }, []);
+
   const handleSubmit = async (formData) => {
     try {
       if (editingItem) {
         await api.updateItem(editingItem.id, formData);
-        message.success('Item berhasil diupdate!');
-        setEditingItem(null);
       } else {
         await api.createItem(formData);
-        message.success('Item berhasil ditambahkan!');
       }
+      setIsModalOpen(false);
+      setEditingItem(null);
       fetchItems();
     } catch (error) {
-      console.error('Submit error:', error);
-      message.error(error.response?.data?.message || 'Gagal menyimpan item');
-      throw error;
+      console.error(error);
     }
   };
 
-  const handleEdit = (item) => {
-    setEditingItem(item);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleDelete = (id) => {
+    Modal.confirm({
+      title: 'Hapus Item?',
+      content: 'Data tidak dapat dikembalikan.',
+      okText: 'Hapus',
+      okType: 'danger',
+      cancelText: 'Batal',
+      centered: true,
+      onOk: async () => {
+        await api.deleteItem(id);
+        fetchItems();
+      }
+    });
   };
 
-  const handleCancelEdit = () => {
-    setEditingItem(null);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await api.deleteItem(id);
-      message.success('Item berhasil dihapus!');
-      fetchItems();
-    } catch (error) {
-      console.error('Delete error:', error);
-      message.error('Gagal menghapus item');
-    }
-  };
+  const filteredItems = items.filter(item => 
+    item.name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   return (
-    <Layout className="min-h-screen bg-[#0f0f23]">
-      {/* Header */}
-      <Header className="bg-[#1a1a2e] border-b border-[#27272a] shadow-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-full flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-              <FiPackage className="text-white text-xl" />
-            </div>
-            <div>
-              <Title level={3} className="!mb-0 !text-white">
-                myproject
-              </Title>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 text-gray-400">
-            <FiBox />
-            <span>{items.length} Items</span>
-          </div>
+    <div style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '40px' }}>
+      
+      {/* HEADER SECTION */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <Title level={2} style={{ margin: '0 0 4px 0', color: 'white' }}>Data Aset</Title>
+          <Text style={{ color: '#888' }}>Kelola daftar aset dan dokumen Anda.</Text>
         </div>
-      </Header>
-
-      {/* Content */}
-      <Content className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto space-y-8">
-          {/* Error Alert */}
-          {error && (
-            <Alert
-              message="Error"
-              description={
-                <div>
-                  <p>{error}</p>
-                  <p className="text-sm mt-2">
-                    API URL: <code className="bg-gray-800 px-2 py-1 rounded">{process.env.NEXT_PUBLIC_API_URL || 'Not set'}</code>
-                  </p>
-                </div>
-              }
-              type="error"
-              closable
-              onClose={() => setError(null)}
-            />
-          )}
-
-          {/* Form Section */}
-          <ItemForm
-            editingItem={editingItem}
-            onSubmit={handleSubmit}
-            onCancel={handleCancelEdit}
+        
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Input 
+            prefix={<SearchOutlined style={{ color: '#555' }} />} 
+            placeholder="Cari aset..." 
+            style={{ width: '250px', background: '#111', border: '1px solid #333', color: 'white' }}
+            onChange={(e) => setSearchText(e.target.value)}
           />
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+            style={{ background: 'white', color: 'black', border: 'none', fontWeight: 600 }}
+          >
+            Tambah Baru
+          </Button>
+        </div>
+      </div>
 
-          {/* Items Grid */}
-          <div className="bg-[#1a1a2e] rounded-2xl p-8 shadow-2xl border border-[#27272a]">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                <FiBox className="text-purple-400" />
+      {/* STATISTIK SEDERHANA */}
+      <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
+        <Col xs={24} sm={12} md={8}>
+          <Card 
+            // PERBAIKAN: bordered={false} deprecated -> variant="borderless"
+            variant="borderless"
+            style={{ background: '#111', border: '1px solid #333', borderRadius: '12px' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <DatabaseOutlined style={{ fontSize: '24px', color: '#3b82f6' }} />
+              <div>
+                <Text style={{ color: '#666', fontSize: '12px', textTransform: 'uppercase' }}>Total Item</Text>
+                <Title level={3} style={{ margin: 0, color: 'white' }}>{items.length}</Title>
               </div>
-              <Title level={2} className="!mb-0 !text-white">
-                Daftar Items
-              </Title>
             </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8}>
+          <Card 
+             // PERBAIKAN: variant="borderless"
+            variant="borderless"
+            style={{ background: '#111', border: '1px solid #333', borderRadius: '12px' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <FileTextOutlined style={{ fontSize: '24px', color: '#8b5cf6' }} />
+              <div>
+                <Text style={{ color: '#666', fontSize: '12px', textTransform: 'uppercase' }}>Dokumen</Text>
+                <Title level={3} style={{ margin: 0, color: 'white' }}>{items.filter(i => i.document).length}</Title>
+              </div>
+            </div>
+          </Card>
+        </Col>
+      </Row>
 
-            {loading ? (
-              <div className="text-center py-20">
-                <Spin 
-                  indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} 
-                  tip={<span className="text-gray-400 mt-4">Memuat data...</span>}
+      {/* GRID CONTENT UTAMA */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '60px' }}>
+          <Spin size="large" />
+        </div>
+      ) : filteredItems.length > 0 ? (
+        <Row gutter={[24, 24]}>
+          {filteredItems.map((item) => (
+            <Col xs={24} sm={12} lg={8} xl={6} key={item.id} style={{ display: 'flex' }}>
+              <div style={{ width: '100%' }}>
+                <ItemCard 
+                  item={item} 
+                  onEdit={(itm) => { setEditingItem(itm); setIsModalOpen(true); }} 
+                  onDelete={handleDelete} 
                 />
               </div>
-            ) : items.length === 0 ? (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={
-                  <span className="text-gray-400">
-                    {error ? 'Gagal memuat data dari server' : 'Belum ada item. Tambahkan item pertama!'}
-                  </span>
-                }
-                className="py-20"
-              />
-            ) : (
-              <Row gutter={[24, 24]}>
-                {items.map((item) => (
-                  <Col xs={24} sm={12} lg={8} key={item.id}>
-                    <ItemCard
-                      item={item}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  </Col>
-                ))}
-              </Row>
-            )}
-          </div>
-        </div>
-      </Content>
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Empty 
+          description={<span style={{ color: '#666' }}>Data tidak ditemukan</span>} 
+          style={{ padding: '60px 0', border: '1px dashed #333', borderRadius: '12px', background: '#111' }}
+        />
+      )}
 
-      {/* Footer */}
-      <Footer className="bg-[#1a1a2e] border-t border-[#27272a] text-center">
-        <Text className="text-gray-400">
-          Dibuat dengan ❤️ menggunakan{' '}
-          <span className="text-purple-400 font-semibold">Next.js</span> +{' '}
-          <span className="text-purple-400 font-semibold">Django</span> +{' '}
-          <span className="text-purple-400 font-semibold">Ant Design</span>
-        </Text>
-        <br />
-        <Text className="text-gray-500 text-sm">
-          Backend API:{' '}
-          <a
-            href="https://myproject-production-ee63.up.railway.app/api/items/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-400 hover:text-purple-300"
-          >
-            Railway
-          </a>
-        </Text>
-      </Footer>
-    </Layout>
+      {/* MODAL FORM */}
+      <Modal
+        title={null}
+        footer={null}
+        open={isModalOpen}
+        onCancel={() => { setIsModalOpen(false); setEditingItem(null); }}
+        // PERBAIKAN: destroyOnClose deprecated -> destroyOnHidden
+        destroyOnHidden
+        centered
+        width={500}
+        styles={{ 
+          content: { background: '#111', border: '1px solid #333', padding: 0 },
+          mask: { backdropFilter: 'blur(5px)' }
+        }}
+      >
+        <ItemForm 
+          editingItem={editingItem} 
+          onSubmit={handleSubmit} 
+          onCancel={() => { setIsModalOpen(false); setEditingItem(null); }} 
+        />
+      </Modal>
+    </div>
   );
 }
