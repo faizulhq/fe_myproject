@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Space, Typography, Tag } from 'antd';
 import { 
   LogoutOutlined, 
@@ -11,6 +11,7 @@ import {
   IdcardOutlined
 } from '@ant-design/icons';
 import useAuthStore from '@/lib/store/authStore';
+import axiosClient from '@/lib/api/axiosClient';
 import Link from 'next/link';
 
 const { Header, Sider, Content } = Layout;
@@ -19,6 +20,42 @@ const { Title } = Typography;
 export default function AdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const { logout, user } = useAuthStore();
+  
+  // STATE BARU: Simpan avatar URL
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [loadingAvatar, setLoadingAvatar] = useState(true);
+
+  // FETCH AVATAR saat component mount
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      try {
+        const res = await axiosClient.get('/auth/profiles/');
+        
+        // Ambil avatar dari response
+        let profileData = null;
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          profileData = res.data[0];
+        } else if (res.data && !Array.isArray(res.data)) {
+          profileData = res.data;
+        }
+        
+        if (profileData?.avatar) {
+          setAvatarUrl(profileData.avatar);
+          console.log('✅ Avatar loaded:', profileData.avatar);
+        } else {
+          console.log('⚠️ No avatar found');
+        }
+      } catch (error) {
+        console.error('❌ Failed to fetch avatar:', error);
+      } finally {
+        setLoadingAvatar(false);
+      }
+    };
+
+    if (user) {
+      fetchAvatar();
+    }
+  }, [user]);
 
   // Menu Sidebar
   const menuItems = [
@@ -36,12 +73,12 @@ export default function AdminLayout({ children }) {
       label: (
         <div style={{ padding: '4px 0', cursor: 'default' }}>
             <div style={{ fontWeight: 'bold', color: 'black' }}>{user?.username}</div>
-            <Tag color={user?.is_staff ? 'gold' : 'blue'} style={{ marginTop: 4, marginRight: 0 }}>
-                {user?.is_staff ? 'ADMIN' : 'USER'}
+            <Tag color={user?.is_staff || user?.role === 'admin' ? 'gold' : 'blue'} style={{ marginTop: 4, marginRight: 0 }}>
+                {user?.is_staff || user?.role === 'admin' ? 'ADMIN' : 'USER'}
             </Tag>
         </div>
       ),
-      disabled: true, // Tidak bisa diklik sebagai link
+      disabled: true,
     },
     {
       type: 'divider',
@@ -112,11 +149,27 @@ export default function AdminLayout({ children }) {
 
           <Dropdown menu={{ items: userDropdownItems }} trigger={['click']}>
             <Space className="cursor-pointer hover:bg-[#222] py-2 px-3 rounded-full transition-colors border border-transparent hover:border-[#333]">
-              <Avatar 
-                size="small" 
-                icon={<UserOutlined />} 
-                className="bg-[#333]" 
-              />
+              {/* TAMPILKAN AVATAR */}
+              {loadingAvatar ? (
+                <Avatar 
+                  size="small" 
+                  icon={<UserOutlined />} 
+                  className="bg-[#555]" 
+                />
+              ) : avatarUrl ? (
+                <Avatar 
+                  size="small" 
+                  src={avatarUrl}
+                  style={{ border: '1px solid #555' }}
+                />
+              ) : (
+                <Avatar 
+                  size="small" 
+                  icon={<UserOutlined />} 
+                  className="bg-[#333]" 
+                />
+              )}
+              
               <span className="text-white text-sm font-medium hidden sm:block">
                 {user?.username || 'User'}
               </span>

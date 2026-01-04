@@ -1,14 +1,24 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider, App } from 'antd';
 import theme from './theme/themeConfig';
 import QueryProvider from '../lib/providers/QueryProvider';
+import useAuthStore from '@/lib/store/authStore';
 import './globals.css';
 
-export const metadata = {
-  title: 'My Project App',
-  description: 'Management System',
-};
+function RootLayoutContent({ children }) {
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+
+  useEffect(() => {
+    // Initialize auth saat aplikasi pertama kali load
+    console.log('🚀 App mounted - Initializing auth...');
+    initializeAuth();
+  }, [initializeAuth]);
+
+  return children;
+}
 
 export default function RootLayout({ children }) {
   return (
@@ -18,8 +28,9 @@ export default function RootLayout({ children }) {
           <AntdRegistry>
             <ConfigProvider theme={theme}>
               <App>
-                {/* AuthGuard dihapus, biarkan Middleware yang bekerja */}
-                {children}
+                <RootLayoutContent>
+                  {children}
+                </RootLayoutContent>
               </App>
             </ConfigProvider>
           </AntdRegistry>

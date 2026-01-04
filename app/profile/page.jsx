@@ -38,23 +38,52 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        console.log("🔍 Fetching profile...");
         const res = await axiosClient.get("/auth/profiles/");
         
-        let data = null;
-        if (Array.isArray(res.data) && res.data.length > 0) {
-            data = res.data[0];
-        } else if (!Array.isArray(res.data)) {
-            data = res.data;
+        console.log("📦 API Response:", res.data);
+        console.log("📦 Response Type:", typeof res.data);
+        console.log("📦 Is Array?", Array.isArray(res.data));
+        
+        let profileData = null;
+        
+        // PERBAIKAN: Handle berbagai format response
+        if (Array.isArray(res.data)) {
+          // Jika response berupa array
+          if (res.data.length > 0) {
+            profileData = res.data[0];
+            console.log("✅ Profile found in array:", profileData);
+          } else {
+            console.log("⚠️ Empty array, profile not found");
+          }
+        } else if (res.data && typeof res.data === 'object' && res.data.id) {
+          // Jika response langsung object dengan ID
+          profileData = res.data;
+          console.log("✅ Profile found as object:", profileData);
+        } else {
+          console.log("❌ Invalid response format");
         }
 
-        if (data) {
-            setProfile(data);
-            setWebsite(data?.website || "");
-            setImageUrl(data.avatar); 
+        if (profileData && profileData.id) {
+          setProfile(profileData);
+          setWebsite(profileData.website || "");
+          setImageUrl(profileData.avatar);
+          console.log("✅ Profile loaded successfully, ID:", profileData.id);
+        } else {
+          console.error("❌ Profile data invalid or missing ID");
+          message.error("Profile tidak ditemukan. Coba refresh halaman.");
         }
       } catch (error) {
-        // Silent error agar tidak mengganggu UX jika belum ada profil
-        console.error("Fetch Profile:", error);
+        console.error("❌ Fetch Profile Error:", error);
+        console.error("Response Status:", error.response?.status);
+        console.error("Response Data:", error.response?.data);
+        
+        // Jika 404, mungkin profile belum dibuat
+        if (error.response?.status === 404) {
+          message.error("Profile belum dibuat. Silakan hubungi admin.");
+        } else {
+          message.error("Gagal memuat profil. Cek console untuk detail.");
+        }
       } finally {
         setLoading(false);
       }
@@ -78,31 +107,51 @@ export default function Profile() {
   };
 
   const handleUpload = async ({ file }) => {
-    if (!profile?.id) {
-        // Refresh otomatis jika ID profil hilang (sinkronisasi data)
-        window.location.reload();
+    // VALIDASI: Cek apakah profile.id ada
+    if (!profile || !profile.id) {
+        console.error("❌ Profile ID tidak ditemukan!");
+        console.error("Profile object:", profile);
+        message.error("Profile ID tidak ditemukan. Refresh halaman dan coba lagi.");
         return;
     }
 
     const formData = new FormData();
     formData.append("avatar", file);
 
+    console.log("🚀 Uploading avatar...");
+    console.log("Profile ID:", profile.id);
+    console.log("File name:", file.name);
+    console.log("File size:", file.size, "bytes");
+
     try {
       setUploading(true);
       
-      // PERBAIKAN DI SINI:
-      // Hapus headers manual 'Content-Type'. Biarkan Axios menanganinya.
-      const res = await axiosClient.patch(`/auth/profiles/${profile.id}/`, formData);
+      // API Call dengan ID yang valid
+      const url = `/auth/profiles/${profile.id}/`;
+      console.log("📡 Request URL:", url);
+      
+      const res = await axiosClient.patch(url, formData);
 
+      console.log("✅ Upload Success:", res.data);
+      
       message.success("Foto profil berhasil diperbarui!");
-      const data = res.data;
-      setImageUrl(data.avatar);
+      setImageUrl(res.data.avatar);
       
       // Refresh halaman agar avatar di Navbar ikut berubah
-      window.location.reload(); 
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
-      console.error(error);
-      message.error("Gagal memperbarui foto profil");
+      console.error("❌ Upload Error:", error);
+      console.error("Response Status:", error.response?.status);
+      console.error("Response Data:", error.response?.data);
+      
+      // TAMPILKAN ERROR DETAIL
+      const errorMsg = error.response?.data?.detail 
+        || error.response?.data?.avatar?.[0] 
+        || "Gagal memperbarui foto profil";
+      
+      message.error(errorMsg);
     } finally {
       setUploading(false);
     }
@@ -112,11 +161,22 @@ export default function Profile() {
     if (!profile?.id) return;
     try {
       setUploading(true);
-      await axiosClient.patch(`/auth/profiles/${profile.id}/`, { avatar: null });
+      
+      console.log("🗑️ Deleting avatar for profile ID:", profile.id);
+      
+      await axiosClient.patch(`/auth/profiles/${profile.id}/`, 
+        { avatar: null },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      
       setImageUrl(null);
       message.success("Foto profil berhasil dihapus!");
-      window.location.reload();
-    } catch {
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("❌ Delete Avatar Error:", error);
       message.error("Gagal menghapus foto profil");
     } finally {
       setUploading(false);
@@ -126,9 +186,15 @@ export default function Profile() {
   const handleUpdateWebsite = async () => {
     if (!profile?.id) return;
     try {
-      await axiosClient.patch(`/auth/profiles/${profile.id}/`, { website });
+      console.log("🔗 Updating website for profile ID:", profile.id);
+      
+      await axiosClient.patch(`/auth/profiles/${profile.id}/`, 
+        { website },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
       message.success("Link sosial berhasil diperbarui!");
-    } catch {
+    } catch (error) {
+      console.error("❌ Update Website Error:", error);
       message.error("Gagal memperbarui link sosial");
     }
   };
@@ -146,6 +212,28 @@ export default function Profile() {
         <Spin size="large" tip="Memuat profil...">
             <div className="p-10" /> 
         </Spin>
+      </div>
+    );
+  }
+
+  // JIKA PROFILE MASIH NULL SETELAH LOADING
+  if (!profile || !profile.id) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black">
+        <Card variant="borderless" style={{ background: '#111', border: '1px solid #333', padding: 40, textAlign: 'center' }}>
+          <Title level={4} style={{ color: 'white' }}>❌ Profile Tidak Ditemukan</Title>
+          <Text style={{ color: '#888', display: 'block', marginBottom: 20 }}>
+            Profile Anda belum dibuat atau terjadi kesalahan.
+          </Text>
+          <Space>
+            <Button onClick={() => window.location.reload()}>
+              Refresh Halaman
+            </Button>
+            <Button type="primary" onClick={() => router.push('/')}>
+              Kembali ke Dashboard
+            </Button>
+          </Space>
+        </Card>
       </div>
     );
   }
