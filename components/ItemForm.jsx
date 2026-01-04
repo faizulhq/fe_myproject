@@ -1,7 +1,6 @@
 'use client';
-
 import { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, message, Space } from 'antd';
+import { Form, Input, Button, Upload, message, Space, Radio } from 'antd';
 import { FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { FiSave, FiX } from 'react-icons/fi';
 
@@ -24,6 +23,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
       form.setFieldsValue({
         name: editingItem.name,
         description: editingItem.description,
+        status: editingItem.status || 'draft',
       });
       
       if (editingItem.image) {
@@ -41,6 +41,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
 
   const resetAll = () => {
     form.resetFields();
+    form.setFieldValue('status', 'draft');
     setImageFile(null);
     setDocumentFile(null);
     setImagePreview(null);
@@ -50,6 +51,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
 
   const handleImageChange = ({ fileList }) => {
     const file = fileList.length > 0 ? fileList[0].originFileObj : null;
+    
     setFileListImage(fileList); 
     setImageFile(file);
 
@@ -79,6 +81,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
     const formData = new FormData();
     formData.append('name', values.name);
     formData.append('description', values.description);
+    formData.append('status', values.status);
     
     if (imageFile) {
       formData.append('image', imageFile);
@@ -116,8 +119,21 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
         form={form}
         layout="vertical"
         onFinish={handleFinish}
+        initialValues={{ status: 'draft' }}
         className="space-y-4"
       >
+        {/* Status Switch */}
+        <Form.Item
+          label={<span className="text-gray-300 font-semibold">Status</span>}
+          name="status"
+          rules={[{ required: true }]}
+        >
+          <Radio.Group buttonStyle="solid">
+            <Radio.Button value="draft">Draft (Pribadi)</Radio.Button>
+            <Radio.Button value="public">Publik</Radio.Button>
+          </Radio.Group>
+        </Form.Item>
+
         <Form.Item
           label={<span className="text-gray-300 font-semibold">Nama Item</span>}
           name="name"

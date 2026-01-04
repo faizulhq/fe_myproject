@@ -1,45 +1,66 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Space, Typography } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Space, Typography, Tag } from 'antd';
 import { 
   LogoutOutlined, 
   MenuUnfoldOutlined, 
   MenuFoldOutlined,
   UserOutlined,
-  DatabaseOutlined
+  DatabaseOutlined,
+  IdcardOutlined
 } from '@ant-design/icons';
-import useAuthStore from '@/lib/store/authStore'; // Integrasi Logic
+import useAuthStore from '@/lib/store/authStore';
+import Link from 'next/link';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
 export default function AdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
-  const { logout, user } = useAuthStore(); // Ambil fungsi logout
+  const { logout, user } = useAuthStore();
 
-  // Menu Handler
-  const handleMenuClick = ({ key }) => {
-    if (key === 'logout') {
-      logout();
-    }
-  };
-
+  // Menu Sidebar
   const menuItems = [
     {
       key: '1',
       icon: <DatabaseOutlined />,
-      label: 'Data Items',
-    },
-    {
-      key: '2',
-      icon: <UserOutlined />,
-      label: 'Profil Saya',
+      label: <Link href="/">Data Items</Link>,
     },
   ];
 
+  // Menu Dropdown User (Kanan Atas)
   const userDropdownItems = [
-    { key: 'logout', label: 'Logout', icon: <LogoutOutlined />, danger: true }
+    {
+      key: 'info',
+      label: (
+        <div style={{ padding: '4px 0', cursor: 'default' }}>
+            <div style={{ fontWeight: 'bold', color: 'black' }}>{user?.username}</div>
+            <Tag color={user?.is_staff ? 'gold' : 'blue'} style={{ marginTop: 4, marginRight: 0 }}>
+                {user?.is_staff ? 'ADMIN' : 'USER'}
+            </Tag>
+        </div>
+      ),
+      disabled: true, // Tidak bisa diklik sebagai link
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'profile',
+      icon: <IdcardOutlined />,
+      label: <Link href="/profile">Profil Saya</Link>,
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      label: 'Logout',
+      icon: <LogoutOutlined />,
+      danger: true,
+      onClick: logout,
+    }
   ];
 
   return (
@@ -89,11 +110,15 @@ export default function AdminLayout({ children }) {
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
 
-          <Dropdown menu={{ items: userDropdownItems, onClick: handleMenuClick }}>
-            <Space className="cursor-pointer hover:bg-[#222] py-1 px-3 rounded-full transition-colors">
-              <Avatar size="small" icon={<UserOutlined />} className="bg-[#333]" />
+          <Dropdown menu={{ items: userDropdownItems }} trigger={['click']}>
+            <Space className="cursor-pointer hover:bg-[#222] py-2 px-3 rounded-full transition-colors border border-transparent hover:border-[#333]">
+              <Avatar 
+                size="small" 
+                icon={<UserOutlined />} 
+                className="bg-[#333]" 
+              />
               <span className="text-white text-sm font-medium hidden sm:block">
-                {user?.username || 'Admin'}
+                {user?.username || 'User'}
               </span>
             </Space>
           </Dropdown>
