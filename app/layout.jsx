@@ -1,23 +1,28 @@
-'use client';
-
-import StyledComponentsRegistry from '../lib/AntdRegistry';
-import themeConfig from './theme/themeConfig';
-import { ConfigProvider } from 'antd';
-import AdminLayout from '../components/AdminLayout';
+import React from 'react';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { ConfigProvider, App } from 'antd';
+import theme from './theme/themeConfig';
+import QueryProvider from '../lib/providers/QueryProvider'; // Import Provider
 import './globals.css';
+
+export const metadata = {
+  title: 'My Project App',
+  description: 'Management System',
+};
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <StyledComponentsRegistry>
-          <ConfigProvider theme={themeConfig}>
-            {/* Bungkus konten dengan AdminLayout */}
-            <AdminLayout>
-              {children}
-            </AdminLayout>
-          </ConfigProvider>
-        </StyledComponentsRegistry>
+        <QueryProvider>
+          <AntdRegistry>
+            <ConfigProvider theme={theme}>
+              <App>
+                {children}
+              </App>
+            </ConfigProvider>
+          </AntdRegistry>
+        </QueryProvider>
       </body>
     </html>
   );
