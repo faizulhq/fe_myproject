@@ -4,8 +4,7 @@ import {
   EditOutlined, 
   DeleteOutlined, 
   CalendarOutlined,
-  PictureOutlined,
-  EyeOutlined
+  PictureOutlined
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -14,7 +13,7 @@ export default function ItemCard({ item, onEdit, onDelete }) {
   return (
     <Card
       hoverable
-      variant="outlined" // Pengganti default bordered
+      variant="outlined"
       style={{ 
         height: '100%',             
         display: 'flex',            
@@ -24,7 +23,6 @@ export default function ItemCard({ item, onEdit, onDelete }) {
         overflow: 'hidden',
         borderRadius: '12px'
       }}
-      // PERBAIKAN: bodyStyle deprecated -> styles.body
       styles={{ 
         body: { 
           flex: 1,                    
@@ -39,23 +37,9 @@ export default function ItemCard({ item, onEdit, onDelete }) {
             <Image
               alt={item.name}
               src={item.image}
-              
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover' 
-              }}
-              
-              // PERBAIKAN: wrapperStyle deprecated -> styles.root
-              styles={{
-                 root: { width: '100%', height: '100%' }
-              }}
-
-              // PERBAIKAN: Hapus custom 'mask' di preview untuk menghindari warning deprecated.
-              // Ant Design otomatis akan menampilkan ikon mata (preview) yang sudah bagus.
-              preview={{
-                src: item.image
-              }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              styles={{ root: { width: '100%', height: '100%' } }}
+              preview={{ src: item.image }}
             />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
@@ -74,7 +58,6 @@ export default function ItemCard({ item, onEdit, onDelete }) {
         </Tooltip>
       ]}
     >
-      {/* Header: Nama Item */}
       <div style={{ marginBottom: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
           <Title level={5} style={{ margin: 0, color: 'white', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }} title={item.name}>
@@ -89,7 +72,6 @@ export default function ItemCard({ item, onEdit, onDelete }) {
           )}
         </div>
         
-        {/* Deskripsi */}
         <Text style={{ 
           color: '#888', 
           fontSize: '13px', 
@@ -104,7 +86,6 @@ export default function ItemCard({ item, onEdit, onDelete }) {
         </Text>
       </div>
 
-      {/* Footer: Tanggal */}
       <div style={{ marginTop: 'auto', borderTop: '1px solid #222', paddingTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
         <CalendarOutlined style={{ color: '#555', fontSize: '12px' }} />
         <Text style={{ color: '#555', fontSize: '12px' }}>

@@ -2,7 +2,7 @@ import React from 'react';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider, App } from 'antd';
 import theme from './theme/themeConfig';
-import QueryProvider from '../lib/providers/QueryProvider'; // Import Provider
+import QueryProvider from '../lib/providers/QueryProvider';
 import './globals.css';
 
 export const metadata = {
@@ -18,6 +18,7 @@ export default function RootLayout({ children }) {
           <AntdRegistry>
             <ConfigProvider theme={theme}>
               <App>
+                {/* AuthGuard dihapus, biarkan Middleware yang bekerja */}
                 {children}
               </App>
             </ConfigProvider>

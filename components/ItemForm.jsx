@@ -2,10 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, message, Space } from 'antd';
-import { 
-  FileImageOutlined, 
-  FilePdfOutlined 
-} from '@ant-design/icons';
+import { FileImageOutlined, FilePdfOutlined } from '@ant-design/icons';
 import { FiSave, FiX } from 'react-icons/fi';
 
 const { TextArea } = Input;
@@ -53,7 +50,6 @@ export default function ItemForm({ editingItem, onSubmit, onCancel }) {
 
   const handleImageChange = ({ fileList }) => {
     const file = fileList.length > 0 ? fileList[0].originFileObj : null;
-    
     setFileListImage(fileList); 
     setImageFile(file);
 

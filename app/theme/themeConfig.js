@@ -3,7 +3,7 @@ import { theme } from 'antd';
 const themeConfig = {
   algorithm: theme.darkAlgorithm,
   token: {
-    fontFamily: "'Inter', sans-serif", // Font modern
+    fontFamily: "'Inter', sans-serif",
     colorBgBase: '#000000',      // Background Hitam Pekat
     colorBgContainer: '#111111', // Container sedikit lebih terang
     colorBgElevated: '#1a1a1a',  // Dropdown/Modal
@@ -20,7 +20,7 @@ const themeConfig = {
       siderBg: '#111111',
     },
     Button: {
-      primaryColor: '#000000', // Teks tombol primary jadi hitam biar terbaca
+      primaryColor: '#000000',
       fontWeight: 600,
     },
     Card: {
