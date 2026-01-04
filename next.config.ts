@@ -9,13 +9,14 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
+        // Tanda ** berarti membolehkan semua subdomain railway (aman & fleksibel)
         protocol: 'https',
-        hostname: 'myproject-production-ee63.up.railway.app',
+        hostname: '**.up.railway.app', 
         pathname: '/**',
       },
     ],
   },
-  // Untuk production build
+  // Output standalone opsional di Vercel, tapi bagus untuk performa build
   output: 'standalone',
 };
 
