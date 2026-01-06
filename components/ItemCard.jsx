@@ -52,6 +52,8 @@ export default function ItemCard({ item, onEdit, onDelete }) {
                 alt={item.name} 
                 src={item.image} 
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                // ✅ BAGIAN INI SAYA KEMBALIKAN (Mengatur wrapper root image agar full width/height)
+                styles={{ root: { width: '100%', height: '100%' } }} 
               />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
