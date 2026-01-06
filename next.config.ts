@@ -5,18 +5,16 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'res.cloudinary.com',
+        hostname: 'assets.senbi.online', // ✅ TAMBAHKAN INI (Domain R2)
         pathname: '/**',
       },
       {
-        // Tanda ** berarti membolehkan semua subdomain railway (aman & fleksibel)
         protocol: 'https',
         hostname: '**.up.railway.app', 
         pathname: '/**',
       },
     ],
   },
-  // Output standalone opsional di Vercel, tapi bagus untuk performa build
   output: 'standalone',
 };
 
