@@ -76,7 +76,7 @@ export default function Home() {
           <div>
             <Title level={2} style={{ margin: '0 0 4px 0', color: 'white' }}>Data Aset</Title>
             <Text style={{ color: '#888' }}>
-              Halo, <span className="text-white font-bold">{user?.username}</span>.
+              Halo, <span className="text-white font-bold">{user?.username}</span>!
             </Text>
           </div>
           

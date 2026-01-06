@@ -18,7 +18,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      minHeight: '100vh',
+      backgroundColor: '#000000ff'
+    }}>
       <Card variant="borderless" style={{ width: 400, background: '#111', border: '1px solid #333' }}>
         <div className="text-center mb-8">
           <Title level={2} style={{ color: 'white', marginBottom: 0 }}>Register</Title>

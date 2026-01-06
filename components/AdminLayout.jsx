@@ -21,17 +21,14 @@ export default function AdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const { logout, user } = useAuthStore();
   
-  // STATE BARU: Simpan avatar URL
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [loadingAvatar, setLoadingAvatar] = useState(true);
 
-  // FETCH AVATAR saat component mount
   useEffect(() => {
     const fetchAvatar = async () => {
       try {
         const res = await axiosClient.get('/auth/profiles/');
         
-        // Ambil avatar dari response
         let profileData = null;
         if (Array.isArray(res.data) && res.data.length > 0) {
           profileData = res.data[0];
@@ -41,12 +38,9 @@ export default function AdminLayout({ children }) {
         
         if (profileData?.avatar) {
           setAvatarUrl(profileData.avatar);
-          console.log('✅ Avatar loaded:', profileData.avatar);
-        } else {
-          console.log('⚠️ No avatar found');
         }
       } catch (error) {
-        console.error('❌ Failed to fetch avatar:', error);
+        console.error(error);
       } finally {
         setLoadingAvatar(false);
       }
@@ -57,7 +51,6 @@ export default function AdminLayout({ children }) {
     }
   }, [user]);
 
-  // Menu Sidebar
   const menuItems = [
     {
       key: '1',
@@ -66,7 +59,6 @@ export default function AdminLayout({ children }) {
     },
   ];
 
-  // Menu Dropdown User (Kanan Atas)
   const userDropdownItems = [
     {
       key: 'info',
@@ -102,7 +94,6 @@ export default function AdminLayout({ children }) {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      {/* SIDEBAR FIXED */}
       <Sider 
         trigger={null} 
         collapsible 
@@ -110,15 +101,40 @@ export default function AdminLayout({ children }) {
         width={240}
         style={{ 
           borderRight: '1px solid #333',
-          position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100
+          position: 'fixed', 
+          left: 0, 
+          top: 0, 
+          bottom: 0, 
+          zIndex: 100
         }}
       >
-        <div className="h-16 flex items-center justify-center border-b border-[#333]">
+        <div style={{ 
+            height: 64, 
+            margin: 16,
+            background: 'rgba(255, 255, 255, 0.1)', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            borderRadius: 6,
+            overflow: 'hidden'
+        }}>
           {collapsed ? (
-            <div className="w-8 h-8 bg-white text-black font-bold flex items-center justify-center rounded">M</div>
+            <div style={{ 
+                width: 32, 
+                height: 32, 
+                background: 'white', 
+                color: 'black', 
+                fontWeight: 'bold', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                borderRadius: 4 
+            }}>
+                M
+            </div>
           ) : (
             <Title level={4} style={{ margin: 0, color: 'white', letterSpacing: '1px' }}>
-              MY<span className="font-light text-gray-500">APP</span>
+              MY<span style={{ fontWeight: 300, color: '#888' }}>APP</span>
             </Title>
           )}
         </div>
@@ -132,7 +148,6 @@ export default function AdminLayout({ children }) {
         />
       </Sider>
 
-      {/* MAIN CONTENT */}
       <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: 'all 0.2s', background: '#000' }}>
         
         <Header style={{ 
@@ -140,21 +155,30 @@ export default function AdminLayout({ children }) {
           background: 'rgba(17, 17, 17, 0.8)', 
           backdropFilter: 'blur(10px)',
           borderBottom: '1px solid #333',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          position: 'sticky', top: 0, zIndex: 90
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          position: 'sticky', 
+          top: 0, 
+          zIndex: 90
         }}>
-          <div onClick={() => setCollapsed(!collapsed)} className="cursor-pointer text-white hover:text-gray-400 text-lg">
+          <div onClick={() => setCollapsed(!collapsed)} style={{ cursor: 'pointer', color: 'white', fontSize: 18 }}>
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
 
           <Dropdown menu={{ items: userDropdownItems }} trigger={['click']}>
-            <Space className="cursor-pointer hover:bg-[#222] py-2 px-3 rounded-full transition-colors border border-transparent hover:border-[#333]">
-              {/* TAMPILKAN AVATAR */}
+            <Space style={{ 
+                cursor: 'pointer', 
+                padding: '8px 12px', 
+                borderRadius: 20, 
+                transition: 'background 0.3s' 
+            }} className="hover:bg-[#222]">
+              
               {loadingAvatar ? (
                 <Avatar 
                   size="small" 
                   icon={<UserOutlined />} 
-                  className="bg-[#555]" 
+                  style={{ backgroundColor: '#555' }}
                 />
               ) : avatarUrl ? (
                 <Avatar 
@@ -166,11 +190,11 @@ export default function AdminLayout({ children }) {
                 <Avatar 
                   size="small" 
                   icon={<UserOutlined />} 
-                  className="bg-[#333]" 
+                  style={{ backgroundColor: '#333' }}
                 />
               )}
               
-              <span className="text-white text-sm font-medium hidden sm:block">
+              <span style={{ color: 'white', fontSize: 14, fontWeight: 500, display: 'block' }}>
                 {user?.username || 'User'}
               </span>
             </Space>

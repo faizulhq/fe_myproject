@@ -15,7 +15,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      minHeight: '100vh',     // Wajib: Agar tinggi container full satu layar
+      backgroundColor: '#000000ff' // Opsional: Warna background abu-abu tipis biar enak dilihat
+    }}>
       <Card variant="borderless" style={{ width: 400, background: '#111', border: '1px solid #333' }}>
         <div className="text-center mb-8">
           <Title level={2} style={{ color: 'white', marginBottom: 0 }}>Welcome</Title>
