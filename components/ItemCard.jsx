@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Typography, Tooltip, Tag, Image, Badge } from 'antd';
-import { EditOutlined, DeleteOutlined, CalendarOutlined, PictureOutlined, UserOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, CalendarOutlined, PictureOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
 import useAuthStore from '@/lib/store/authStore';
 
 const { Title, Text } = Typography;
@@ -8,11 +8,20 @@ const { Title, Text } = Typography;
 export default function ItemCard({ item, onEdit, onDelete }) {
   const { user } = useAuthStore();
   
-  // Logic Izin: Admin BOLEH edit semua, Owner BOLEH edit miliknya.
-  // is_my_item dikirim dari backend serializer
   const canModify = user?.role === 'admin' || item.is_my_item;
 
   const actions = [];
+
+  if (item.document) {
+    actions.push(
+      <Tooltip title="Buka Dokumen" key="document">
+        <a href={item.document} target="_blank" rel="noopener noreferrer">
+          <FileTextOutlined className="text-blue-500 hover:text-blue-400" />
+        </a>
+      </Tooltip>
+    );
+  }
+
   if (canModify) {
     actions.push(
       <Tooltip title="Edit Data" key="edit">
@@ -39,7 +48,11 @@ export default function ItemCard({ item, onEdit, onDelete }) {
         cover={
           <div style={{ height: '200px', width: '100%', background: '#1a1a1a', borderBottom: '1px solid #333', overflow: 'hidden' }}>
             {item.image ? (
-              <Image alt={item.name} src={item.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} styles={{ root: { width: '100%', height: '100%' } }} />
+              <Image 
+                alt={item.name} 
+                src={item.image} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555' }}>
                 <PictureOutlined style={{ fontSize: 32, marginBottom: 8 }} />
@@ -52,16 +65,30 @@ export default function ItemCard({ item, onEdit, onDelete }) {
       >
         <div style={{ marginBottom: '12px' }}>
           <Title level={5} style={{ margin: 0, color: 'white' }} ellipsis={{ tooltip: item.name }}>{item.name}</Title>
+          
           <div className="flex gap-2 mt-1 mb-2">
              <Tag icon={<UserOutlined />} color="#222" style={{ border: '1px solid #333', color: '#888' }}>
                 {item.owner_username || 'Unknown'}
              </Tag>
-             {item.document && <Tag color="#1f1f1f" style={{ border: '1px solid #333', color: '#888' }}>DOC</Tag>}
+             
+             {item.document && (
+               <a href={item.document} target="_blank" rel="noopener noreferrer">
+                 <Tag 
+                    icon={<FileTextOutlined />} 
+                    color="geekblue" 
+                    style={{ cursor: 'pointer', border: '1px solid #1d39c4' }}
+                 >
+                    Lihat Dokumen
+                 </Tag>
+               </a>
+             )}
           </div>
+
           <Text style={{ color: '#888', fontSize: '13px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '40px' }}>
             {item.description || "Tidak ada deskripsi."}
           </Text>
         </div>
+        
         <div style={{ marginTop: 'auto', borderTop: '1px solid #222', paddingTop: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <CalendarOutlined style={{ color: '#555', fontSize: '12px' }} />
           <Text style={{ color: '#555', fontSize: '12px' }}>
